@@ -86,7 +86,6 @@ url-shortener/
 
 ```
 
-
 ### 1. Préparation Initiale
 
 1. **Clonez le dépôt :**
@@ -224,3 +223,31 @@ Ctrl + C
 ```
 
 Tu verras des logs confirmant l'arrêt propre du serveur.
+
+## Contributeurs
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/NicolasBELLANGER">
+        <img src="https://avatars.githubusercontent.com/u/149343482?v=4" width="100px;" alt="Nicolas Bellanger"/>
+        <br />
+        <sub><b>Nicolas Bellanger</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/YanisARAR931">
+        <img src="https://avatars.githubusercontent.com/u/149157594?v=4" width="100px;" alt="Yanis ARAR"/>
+        <br />
+        <sub><b>Yanis Arar</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Louisrca">
+        <img src="https://avatars.githubusercontent.com/u/95973810?v=4" width="100px;" alt="Louis RCA"/>
+        <br />
+        <sub><b>Louis Rocca</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
