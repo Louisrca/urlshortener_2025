@@ -51,11 +51,9 @@ func (s *LinkService) CreateLink(longURL string) (*models.Link, error) {
 			return nil, fmt.Errorf("failed to generate short code: %w", err)
 		}
 
-		// 👇 ICI était le bug : il manquait totalement cet appel !
 		_, err = s.linkRepo.GetLinkByShortCode(code)
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// code libre → bingo !
 			shortCode = code
 			break
 		}
@@ -65,7 +63,6 @@ func (s *LinkService) CreateLink(longURL string) (*models.Link, error) {
 			return nil, fmt.Errorf("database error checking code uniqueness: %w", err)
 		}
 
-		// Collision détectée
 		log.Printf("Short code '%s' already exists, retrying (%d/%d)...",
 			code, i+1, maxRetries)
 	}

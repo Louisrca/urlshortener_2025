@@ -48,7 +48,7 @@ basées sur les modèles Go.`,
 		}
 
 		// Succès
-		fmt.Println("✅ Migrations de la base de données exécutées avec succès.")
+		fmt.Println("Migrations de la base de données exécutées avec succès.")
 	},
 }
 
