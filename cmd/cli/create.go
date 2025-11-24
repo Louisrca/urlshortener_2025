@@ -52,7 +52,7 @@ Exemple:
 		
 		// TODO : Initialiser la connexion à la base de données SQLite.
 
-		db, err := gorm.Open(sqlite.Open(cfg.Database.Path), &gorm.Config{})
+		db, err := gorm.Open(sqlite.Open(cfg.Database.Name), &gorm.Config{})
 		if err != nil {
 			log.Fatalf("FATAL: Échec de la connexion à la base de données: %v", err)
 		}

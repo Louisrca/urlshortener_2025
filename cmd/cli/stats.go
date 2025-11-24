@@ -50,7 +50,7 @@ Exemple:
 		// TODO 3: Initialiser la connexion à la BDD.
 		// log.Fatalf si erreur
 
-		db, err := gorm.Open(sqlite.Open(cfg.Database.Path), &gorm.Config{})
+		db, err := gorm.Open(sqlite.Open(cfg.Database.Name), &gorm.Config{})
 		if err != nil {
 			log.Fatalf("FATAL: Échec de la connexion à la base de données: %v", err)
 		}
@@ -98,10 +98,12 @@ Exemple:
 // Il est utilisé pour définir les flags que cette commande accepte.
 func init() {
 	// TODO : Définir le flag --code pour la commande stats.
+	StatsCmd.Flags().String("code", "", "Le code court de l'URL pour laquelle récupérer les statistiques")
 
 	// TODO Marquer le flag comme requis
-
+	StatsCmd.MarkFlagRequired("code")
 
 	// TODO : Ajouter la commande à RootCmd
+	RootCmd.AddCommand(StatsCmd)
 
 }
