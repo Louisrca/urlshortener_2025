@@ -35,7 +35,7 @@ Exemple:
 
 		shortCodeFlag, err := cmd.Flags().GetString("code")
 		if err != nil {
-			log.Fatalf("Erreur lors de la lecture du flag --code :" %v, err)
+			log.Fatalf("Erreur lors de la lecture du flag --code : %v", err)
 		}
 
 		if shortCodeFlag == "" {
@@ -104,6 +104,6 @@ func init() {
 	StatsCmd.MarkFlagRequired("code")
 
 	// TODO : Ajouter la commande à RootCmd
-	RootCmd.AddCommand(StatsCmd)
+	cmd2.RootCmd.AddCommand(StatsCmd)
 
 }

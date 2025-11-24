@@ -103,6 +103,6 @@ func init() {
 
 	// TODO : Ajouter la commande à RootCmd
 
-	RootCmd.AddCommand(CreateCmd)
+	cmd2.RootCmd.AddCommand(CreateCmd)
 
 }
