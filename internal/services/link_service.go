@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/big"
 	"time"
 
 	"gorm.io/gorm" // Nécessaire pour la gestion spécifique de gorm.ErrRecordNotFound
@@ -22,6 +21,9 @@ const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 // Elle détient linkRepo qui est une référence vers une interface LinkRepository.
 // IMPORTANT : Le champ doit être du type de l'interface (non-pointeur).
 
+type LinkService struct {
+	linkRepo repository.LinkRepository
+}
 
 // NewLinkService crée et retourne une nouvelle instance de LinkService.
 func NewLinkService(linkRepo repository.LinkRepository) *LinkService {
@@ -36,6 +38,18 @@ func NewLinkService(linkRepo repository.LinkRepository) *LinkService {
 // Il utilise le package 'crypto/rand' pour éviter la prévisibilité.
 // Je vous laisse chercher un peu :) C'est faisable en une petite dizaine de ligne
 
+func (s *LinkService) GenerateShortCode(length int) (string, error) {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	for i := 0; i < length; i++ {
+		b[i] = charset[int(b[i])%len(charset)]
+	}
+	return string(b), nil
+}
 
 // CreateLink crée un nouveau lien raccourci.
 // Il génère un code court unique, puis persiste le lien dans la base de données.
@@ -44,14 +58,21 @@ func (s *LinkService) CreateLink(longURL string) (*models.Link, error) {
 	// Essayez de générer un code, vérifiez s'il existe déjà en base, et retentez si une collision est trouvée.
 	// Limitez le nombre de tentatives pour éviter une boucle infinie.
 
+	const maxRetries = 5
+
+	var shortCode string
+
 	// TODO Créer une variable shortcode pour stocker le shortcode créé
 
 	// TODO Définir un nombre maximum (5) de tentative pour trouver un code unique  (maxRetries)
 
-
 	for i := 0; i < maxRetries; i++ {
 		// TODO : Génère un code de 6 caractères (GenerateShortCode)
 
+		code, err := s.GenerateShortCode(6)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate short code: %w", err)
+		}
 
 		// TODO : Vérifie si le code généré existe déjà en base de données (GetLinkbyShortCode)
 		// On ignore la première valeur
@@ -73,14 +94,21 @@ func (s *LinkService) CreateLink(longURL string) (*models.Link, error) {
 
 	// TODO : Si après toutes les tentatives, aucun code unique n'a été trouvé... Errors.New
 
-
 	// TODO Crée une nouvelle instance du modèle Link.
-	link :=
+	link := &models.Link{
+		LongURL:   longURL,
+		ShortCode: shortCode,
+		CreatedAt: time.Now(),
+	}
 
 	// TODO Persiste le nouveau lien dans la base de données via le repository (CreateLink)
 
+	if err := s.linkRepo.CreateLink(link); err != nil {
+		return nil, fmt.Errorf("failed to create link in database: %w", err)
+	}
 
 	// TODO Retourne le lien créé
+	return link, nil
 
 }
 
@@ -90,6 +118,12 @@ func (s *LinkService) GetLinkByShortCode(shortCode string) (*models.Link, error)
 	// TODO : Récupérer un lien par son code court en utilisant s.linkRepo.GetLinkByShortCode.
 	// Retourner le lien trouvé ou une erreur si non trouvé/problème DB.
 
+	link, err := s.linkRepo.GetLinkByShortCode(shortCode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get link by short code: %w", err)
+	}
+	return link, nil
+
 }
 
 // GetLinkStats récupère les statistiques pour un lien donné (nombre total de clics).
@@ -97,10 +131,20 @@ func (s *LinkService) GetLinkByShortCode(shortCode string) (*models.Link, error)
 func (s *LinkService) GetLinkStats(shortCode string) (*models.Link, int, error) {
 	// TODO : Récupérer le lien par son shortCode
 
+	link, err := s.linkRepo.GetLinkByShortCode(shortCode)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get link by short code: %w", err)
+	}
+
+	// TODO : Compter le nombre de clics pour ce lien en utilisant link.ID
+
+	clickCount, err := s.linkRepo.CountClicksByLinkID(link.ID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count clicks for link ID %d: %w", link.ID, err)
+	}
 
 	// TODO 4: Compter le nombre de clics pour ce LinkID
 
 	// TODO : on retourne les 3 valeurs
-	return
+	return link, clickCount, nil
 }
-

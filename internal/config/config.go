@@ -73,7 +73,7 @@ func LoadConfig() (*Config, error) {
 	// TODO 4: Démapper (unmarshal) la configuration lue (ou les valeurs par défaut) dans la structure Config.
 	var cfg Config
 
-	if err := viper.Unmarshal(cfg); err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
