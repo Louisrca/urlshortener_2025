@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -16,6 +17,8 @@ import (
 
 // TODO : variable shortCodeFlag qui stockera la valeur du flag --code
 
+var shortCodeFlag = flag.String("code", "", "Le code court de l'URL pour laquelle récupérer les statistiques")
+
 
 // StatsCmd représente la commande 'stats'
 var StatsCmd = &cobra.Command{
@@ -30,14 +33,27 @@ Exemple:
 		// TODO : Valider que le flag --code a été fourni.
 		// os.Exit(1) si erreur
 
+		shortCodeFlag, err := cmd.Flags().GetString("code")
+		if err != nil {
+			log.Fatalf("Erreur lors de la lecture du flag --code :" %v, err)
+		}
+
+		if shortCodeFlag == "" {
+			fmt.Fprintln(os.Stderr, "ERREUR : le flag --code est requis.")
+			os.Exit(1)
+		}
 
 		// TODO : Charger la configuration chargée globalement via cmd.cfg
 
+		cfg := cmd2.Cfg
 
 		// TODO 3: Initialiser la connexion à la BDD.
 		// log.Fatalf si erreur
 
-
+		db, err := gorm.Open(sqlite.Open(cfg.Database.Path), &gorm.Config{})
+		if err != nil {
+			log.Fatalf("FATAL: Échec de la connexion à la base de données: %v", err)
+		}
 
 		sqlDB, err := db.DB()
 		if err != nil {
@@ -47,17 +63,30 @@ Exemple:
 
 		// TODO S'assurer que la connexion est fermée à la fin de l'exécution de la commande grâce à defer
 
+		defer func (){
+			if err := sqlDB.Close(); err != nil {
+				log.Printf("WARN: Échec de la fermeture de la connexion à la base de données: %v", err)
+			}
+		}()
 
 		// TODO : Initialiser les repositories et services nécessaires NewLinkRepository & NewLinkService
-		linkRepo :=
-		linkService :=
+		linkRepo := repository.NewLinkRepository(db)
+		linkService := services.NewLinkService(linkRepo)
 
 		// TODO 5: Appeler GetLinkStats pour récupérer le lien et ses statistiques.
 		// Attention, la fonction retourne 3 valeurs
 		// Pour l'erreur, utilisez gorm.ErrRecordNotFound
 		// Si erreur, os.Exit(1)
 
-
+		link, totalClicks, err := linkService.GetLinkStats(shortCodeFlag)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				fmt.Fprintf(os.Stderr, "ERREUR : Aucun lien trouvé pour le code court \"%s\".\n", shortCodeFlag)
+				os.Exit(1)
+			} else {
+				log.Fatalf("FATAL: Échec de la récupération des statistiques du lien: %v", err)
+			}
+		}
 
 		fmt.Printf("Statistiques pour le code court: %s\n", link.ShortCode)
 		fmt.Printf("URL longue: %s\n", link.LongURL)
