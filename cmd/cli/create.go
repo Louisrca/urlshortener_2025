@@ -72,7 +72,7 @@ Exemple:
 		
 		// TODO : Initialiser les repositories et services nécessaires NewLinkRepository & NewLinkService
 
-		linkRepo := repository.NewLinkRepository(sqlDB)
+		linkRepo := repository.NewLinkRepository(db)
 		linkService := services.NewLinkService(linkRepo)
 
 		// TODO : Appeler le LinkService et la fonction CreateLink pour créer le lien court.
