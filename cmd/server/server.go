@@ -12,6 +12,7 @@ import (
 
 	cmd2 "github.com/axellelanca/urlshortener/cmd"
 	"github.com/axellelanca/urlshortener/internal/api"
+	"github.com/axellelanca/urlshortener/internal/config"
 	"github.com/axellelanca/urlshortener/internal/models"
 	"github.com/axellelanca/urlshortener/internal/monitor"
 	"github.com/axellelanca/urlshortener/internal/repository"
@@ -34,7 +35,7 @@ puis lance le serveur HTTP.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO : créer une variable qui stock la configuration chargée globalement via cmd.cfg
 		// Ne pas oublier la gestion d'erreur et faire un fatalF
-		cfg, err := cmd2.GetConfig()
+		cfg, err := config.GetConfig()
 		if err != nil {
 			log.Fatalf("FATAL: Échec du chargement de la configuration : %v", err)
 		}
@@ -61,7 +62,6 @@ puis lance le serveur HTTP.`,
 		// TODO : Initialiser les repositories.
 		log.Println("Initialisation des repositories...")
 
-
 		// Créez des instances de GormLinkRepository et GormClickRepository.
 		linkRepo := repository.NewGormLinkRepository(db)
 		clickRepo := repository.NewGormClickRepository(db)
@@ -73,7 +73,7 @@ puis lance le serveur HTTP.`,
 		// Créez des instances de LinkService et ClickService, en leur passant les repositories nécessaires.
 		log.Println("Initialisation des services métiers...")
 		linkService := services.NewLinkService(linkRepo)
-		clickService := services.NewClickService(clickRepo, linkRepo)
+		clickService := services.NewClickService(clickRepo)
 
 		// Laissez le log
 		log.Println("Services métiers initialisés.")
