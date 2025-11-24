@@ -31,7 +31,7 @@ var RunServerCmd = &cobra.Command{
 démarre les workers asynchrones pour les clics et le moniteur d'URLs,
 puis lance le serveur HTTP.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO : créer une variable qui stock la configuration chargée globalement via cmd.cfg
+		//  : créer une variable qui stock la configuration chargée globalement via cmd.cfg
 		// Ne pas oublier la gestion d'erreur et faire un fatalF
 
 		cfg := cmd2.Cfg
@@ -39,7 +39,7 @@ puis lance le serveur HTTP.`,
 			log.Fatal("Configuration non chargée. Assurez-vous que la configuration est correctement initialisée.")
 		}
 
-		// TODO : Initialiser la connexion à la bBDD
+		//  : Initialiser la connexion à la bBDD
 		db, err := gorm.Open(sqlite.Open(cfg.Database.Name), &gorm.Config{})
 		if err != nil {
 			log.Fatalf("FATAL: Échec de la connexion à la base de données: %v", err)
@@ -51,16 +51,16 @@ puis lance le serveur HTTP.`,
 		}
 		defer sqlDB.Close()
 
-		// TODO : Initialiser le routeur Gin
+		//  : Initialiser le routeur Gin
 		router := gin.Default()
 
-		// TODO : Initialiser les repositories.
+		//  : Initialiser les repositories.
 		// Créez des instances de GormLinkRepository et GormClickRepository.
 		log.Println("Initialisation des repositories...")
 
 		// Laissez le log
 
-		// TODO : Initialiser les services métiers.
+		//  : Initialiser les services métiers.
 		// Créez des instances de LinkService et ClickService, en leur passant les repositories nécessaires.
 
 		clickRepo := repository.NewClickRepository(db)
@@ -74,7 +74,7 @@ puis lance le serveur HTTP.`,
 		// Laissez le log
 		log.Println("Services métiers initialisés.")
 
-		// TODO : Initialiser le channel ClickEventsChannel (api/handlers) des événements de clic et lancer les workers (StartClickWorkers).
+		//  : Initialiser le channel ClickEventsChannel (api/handlers) des événements de clic et lancer les workers (StartClickWorkers).
 		// Le channel est bufferisé avec la taille configurée.
 		// Passez le channel et le clickRepo aux workers.
 
@@ -84,22 +84,22 @@ puis lance le serveur HTTP.`,
 		numWorkers := cfg.Analytics.WorkerCount
 		workers.StartClickWorkers(numWorkers, api.ClickEventsChannel, clickRepo)
 
-		// TODO : Remplacer les XXX par les bonnes variables
+		//  : Remplacer les XXX par les bonnes variables
 		log.Printf("Channel d'événements de clic initialisé avec un buffer de %d. %d worker(s) de clics démarré(s).",
 			bufferSize, numWorkers)
 
-		// TODO : Initialiser et lancer le moniteur d'URLs.
+		//  : Initialiser et lancer le moniteur d'URLs.
 		// Utilisez l'intervalle configuré
 		monitorInterval := time.Duration(cfg.Monitor.IntervalMinutes) * time.Minute
 		urlMonitor := monitor.NewUrlMonitor(linkRepo, monitorInterval) // Le moniteur a besoin du linkRepo et de l'interval
 
-		// TODO Lancez le moniteur dans sa propre goroutine.
+		//  Lancez le moniteur dans sa propre goroutine.
 
 		go urlMonitor.Start()
 
 		log.Printf("Moniteur d'URLs démarré avec un intervalle de %v.", monitorInterval)
 
-		// TODO : Configurer le routeur Gin et les handlers API.
+		//  : Configurer le routeur Gin et les handlers API.
 		// Passez les services nécessaires aux fonctions de configuration des routes.
 
 		api.SetupRoutes(router, linkService)
@@ -114,7 +114,7 @@ puis lance le serveur HTTP.`,
 			Handler: router,
 		}
 
-		// TODO : Démarrer le serveur Gin dans une goroutine anonyme pour ne pas bloquer.
+		//  : Démarrer le serveur Gin dans une goroutine anonyme pour ne pas bloquer.
 		// Pensez à logger des ptites informations...
 
 		go func() {
@@ -125,7 +125,7 @@ puis lance le serveur HTTP.`,
 		}()
 
 		// Gére l'arrêt propre du serveur (graceful shutdown).
-		// TODO Créez un channel pour les signaux OS (SIGINT, SIGTERM), bufferisé à 1.
+		//  Créez un channel pour les signaux OS (SIGINT, SIGTERM), bufferisé à 1.
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) // Attendre Ctrl+C ou signal d'arrêt
 
@@ -142,6 +142,6 @@ puis lance le serveur HTTP.`,
 }
 
 func init() {
-	// TODO : ajouter la commande
+	//  : ajouter la commande
 	cmd2.RootCmd.AddCommand(RunServerCmd)
 }

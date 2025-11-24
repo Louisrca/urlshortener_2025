@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO LinkRepository est une interface qui définit les méthodes d'accès aux données
+//  LinkRepository est une interface qui définit les méthodes d'accès aux données
 // pour les opérations CRUD sur les liens.
 // L'implémenter avec les méthodes nécessaires
 
@@ -16,7 +16,7 @@ type LinkRepository interface {
 	CountClicksByLinkID(linkID uint) (int, error)
 }
 
-// TODO :  GormLinkRepository est l'implémentation de LinkRepository utilisant GORM.
+// :  GormLinkRepository est l'implémentation de LinkRepository utilisant GORM.
 type GormLinkRepository struct {
 	db *gorm.DB
 }
@@ -24,13 +24,13 @@ type GormLinkRepository struct {
 // NewLinkRepository crée et retourne une nouvelle instance de GormLinkRepository.
 // Cette fonction retourne *GormLinkRepository, qui implémente l'interface LinkRepository.
 func NewLinkRepository(db *gorm.DB) *GormLinkRepository {
-	// TODO
+	//
 	return &GormLinkRepository{db: db}
 }
 
 // CreateLink insère un nouveau lien dans la base de données.
 func (r *GormLinkRepository) CreateLink(link *models.Link) error {
-	// TODO 1: Utiliser GORM pour créer un nouvel enregistrement (link) dans la table des liens.
+	//  1: Utiliser GORM pour créer un nouvel enregistrement (link) dans la table des liens.
 	return r.db.Create(link).Error
 }
 
@@ -38,7 +38,7 @@ func (r *GormLinkRepository) CreateLink(link *models.Link) error {
 // Il renvoie gorm.ErrRecordNotFound si aucun lien n'est trouvé avec ce shortCode.
 func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link, error) {
 	var link models.Link
-	// TODO 2: Utiliser GORM pour trouver un lien par son ShortCode.
+	//  2: Utiliser GORM pour trouver un lien par son ShortCode.
 	// La méthode First de GORM recherche le premier enregistrement correspondant et le mappe à 'link'.
 	err := r.db.Where("short_code = ?", shortCode).First(&link).Error
 	if err != nil {
@@ -52,7 +52,7 @@ func (r *GormLinkRepository) GetLinkByShortCode(shortCode string) (*models.Link,
 // Cette méthode est utilisée par le moniteur d'URLs.
 func (r *GormLinkRepository) GetAllLinks() ([]models.Link, error) {
 	var links []models.Link
-	// TODO 3: Utiliser GORM pour récupérer tous les liens.
+	//  3: Utiliser GORM pour récupérer tous les liens.
 	err := r.db.Find(&links).Error
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (r *GormLinkRepository) GetAllLinks() ([]models.Link, error) {
 // CountClicksByLinkID compte le nombre total de clics pour un ID de lien donné.
 func (r *GormLinkRepository) CountClicksByLinkID(linkID uint) (int, error) {
 	var count int64 // GORM retourne un int64 pour les comptes
-	// TODO 4: Utiliser GORM pour compter les enregistrements dans la table 'clicks'
+	//  4: Utiliser GORM pour compter les enregistrements dans la table 'clicks'
 	// où 'LinkID' correspond à l'ID du lien donné.
 	err := r.db.Model(&models.Click{}).Where("link_id = ?", linkID).Count(&count).Error
 	if err != nil {
