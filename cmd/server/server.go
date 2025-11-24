@@ -34,17 +34,46 @@ puis lance le serveur HTTP.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO : créer une variable qui stock la configuration chargée globalement via cmd.cfg
 		// Ne pas oublier la gestion d'erreur et faire un fatalF
+		cfg, err := cmd2.GetConfig()
+		if err != nil {
+			log.Fatalf("FATAL: Échec du chargement de la configuration : %v", err)
+		}
+
+		// TODO : Initialiser la connexion à la BDD
+		db, err := gorm.Open(sqlite.Open(cfg.Database.Path), &gorm.Config{})
+		if err != nil {
+			log.Fatalf("FATAL: Échec de la connexion à la base de données : %v", err)
+		}
+
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Fatalf("FATAL: Échec de l'obtention de la base de données SQL sous-jacente: %v", err)
+		}
+		defer func() {
+			if err := sqlDB.Close(); err != nil {
+				log.Printf("WARN: Échec de la fermeture de la base de données : %v", err)
+			}
+		}()
 
 		// TODO : Initialiser la connexion à la bBDD
+		log.Println("Connexion à la base de données établie")
 
 		// TODO : Initialiser les repositories.
+		log.Println("Initialisation des repositories...")
+
+
 		// Créez des instances de GormLinkRepository et GormClickRepository.
+		linkRepo := repository.NewGormLinkRepository(db)
+		clickRepo := repository.NewGormClickRepository(db)
 
 		// Laissez le log
 		log.Println("Repositories initialisés.")
 
 		// TODO : Initialiser les services métiers.
 		// Créez des instances de LinkService et ClickService, en leur passant les repositories nécessaires.
+		log.Println("Initialisation des services métiers...")
+		linkService := services.NewLinkService(linkRepo)
+		clickService := services.NewClickService(clickRepo, linkRepo)
 
 		// Laissez le log
 		log.Println("Services métiers initialisés.")
@@ -52,22 +81,29 @@ puis lance le serveur HTTP.`,
 		// TODO : Initialiser le channel ClickEventsChannel (api/handlers) des événements de clic et lancer les workers (StartClickWorkers).
 		// Le channel est bufferisé avec la taille configurée.
 		// Passez le channel et le clickRepo aux workers.
+		clickEventsChannel := make(chan models.ClickEvent, cfg.Workers.ClickWorkerBufferSize)
+		workers.StartClickWorkers(clickEventsChannel, clickRepo, cfg.Workers.ClickWorkerCount)
 
 		// TODO : Remplacer les XXX par les bonnes variables
 		log.Printf("Channel d'événements de clic initialisé avec un buffer de %d. %d worker(s) de clics démarré(s).",
-			XXX, XXX)
+			cfg.Workers.ClickWorkerBufferSize, cfg.Workers.ClickWorkerCount)
 
 		// TODO : Initialiser et lancer le moniteur d'URLs.
+		log.Println("Initialisation du moniteur d'URL...")
 		// Utilisez l'intervalle configuré
-		monitorInterval := time.Duration(XXX) * time.Minute
-		urlMonitor := monitor.NewUrlMonitor() // Le moniteur a besoin du linkRepo et de l'interval
+		monitorInterval := time.Duration(cfg.Workers.UrlMonitorIntervalMinutes) * time.Minute
+		urlMonitor := monitor.NewUrlMonitor(linkRepo, monitorInterval) // Le moniteur a besoin du linkRepo et de l'interval
 
 		// TODO Lancez le moniteur dans sa propre goroutine.
+		go urlMonitor.Start()
 
 		log.Printf("Moniteur d'URLs démarré avec un intervalle de %v.", monitorInterval)
 
 		// TODO : Configurer le routeur Gin et les handlers API.
 		// Passez les services nécessaires aux fonctions de configuration des routes.
+		log.Println("Configuration des routes API...")
+		router := gin.Default()
+		api.ConfigureRoutes(router, linkService, clickService, clickEventsChannel)
 
 		// Pas toucher au log
 		log.Println("Routes API configurées.")
@@ -81,11 +117,17 @@ puis lance le serveur HTTP.`,
 
 		// TODO : Démarrer le serveur Gin dans une goroutine anonyme pour ne pas bloquer.
 		// Pensez à logger des ptites informations...
+		go func() {
+			log.Println("Démarrage du serveur HTTP sur le port ", cfg.Server.Port)
+			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Fatalf("FATAL: Échec du démarrage du serveur HTTP : %v", err)
+			}
+		}()
 
 		// Gére l'arrêt propre du serveur (graceful shutdown).
 		// TODO Créez un channel pour les signaux OS (SIGINT, SIGTERM), bufferisé à 1.
-		quit :=
-			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) // Attendre Ctrl+C ou signal d'arrêt
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) // Attendre Ctrl+C ou signal d'arrêt
 
 		// Bloquer jusqu'à ce qu'un signal d'arrêt soit reçu.
 		<-quit
@@ -101,4 +143,5 @@ puis lance le serveur HTTP.`,
 
 func init() {
 	// TODO : ajouter la commande
+	cmd2.RootCmd.AddCommand(RunServerCmd)
 }
