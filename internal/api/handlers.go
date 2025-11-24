@@ -56,7 +56,7 @@ func SetupRoutes(router *gin.Engine, linkService *services.LinkService) {
 // HealthCheckHandler gère la route /health pour vérifier l'état du service.
 func HealthCheckHandler(c *gin.Context) {
 	// TODO  Retourner simplement du JSON avec un StatusOK, {"status": "ok"}
-	return c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 // CreateLinkRequest représente le corps de la requête JSON pour la création d'un lien.
@@ -116,7 +116,7 @@ func RedirectHandler(linkService *services.LinkService) gin.HandlerFunc {
 			// Utiliser errors.Is et l'erreur Gorm
 			if errors.Is(err, gorm.ErrRecordNotFound) { // Utilisez errors.Is(err, gorm.ErrRecordNotFound) en production si l'erreur est wrappée
 
-				return c.JSON(http.StatusNotFound, gin.H{"error": "Link not found"})
+				c.JSON(http.StatusNotFound, gin.H{"error": "Link not found"})
 			}
 			// Gérer d'autres erreurs potentielles de la base de données ou du service
 			log.Printf("Error retrieving link for %s: %v", shortCode, err)
@@ -164,7 +164,7 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 		link, err := linkService.GetLinkByShortCode(shortCode)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return c.JSON(http.StatusNotFound, gin.H{"error": "Link not found"})
+				c.JSON(http.StatusNotFound, gin.H{"error": "Link not found"})
 			}
 			log.Printf("Error retrieving link for %s: %v", shortCode, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
@@ -173,9 +173,8 @@ func GetLinkStatsHandler(linkService *services.LinkService) gin.HandlerFunc {
 
 		// Retourne les statistiques dans la réponse JSON.
 		c.JSON(http.StatusOK, gin.H{
-			"short_code":   link.ShortCode,
-			"long_url":     link.LongURL,
-			"total_clicks": totalClicks,
+			"short_code": link.ShortCode,
+			"long_url":   link.LongURL,
 		})
 	}
 }

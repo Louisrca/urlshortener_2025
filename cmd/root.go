@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"log"
-
+"github.com/axellelanca/urlshortener/internal/cli"
 	"github.com/axellelanca/urlshortener/internal/config"
 	"github.com/spf13/cobra"
 )
